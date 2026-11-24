@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: ordena-postgres
+    environment:
+      POSTGRES_USER: ordena
+      POSTGRES_PASSWORD: ordena
+      POSTGRES_DB: ordena_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - ordena-pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ordena -d ordena_dev']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  ordena-pgdata:

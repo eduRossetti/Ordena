@@ -1,0 +1,48 @@
+{
+  "name": "ordena",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run db:up && prisma migrate deploy && next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose -f infra/compose.yaml up -d --wait",
+    "db:down": "docker compose -f infra/compose.yaml down",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "test": "npm run db:up && NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
+    "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest --selectProjects unit --passWithNoTests",
+    "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest --selectProjects integration --runInBand",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch --selectProjects unit --passWithNoTests",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^18.0.10",
+    "next": "16.4.6",
+    "next-connect": "^1.0.0",
+    "pg": "^8.23.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "4.3.3",
+    "@types/jest": "^30.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "eslint-config-prettier": "^10.1.8",
+    "jest": "^30.5.2",
+    "prettier": "^3.10.1",
+    "prisma": "^7.10.1",
+    "tailwindcss": "4.3.3"
+  }
+}
