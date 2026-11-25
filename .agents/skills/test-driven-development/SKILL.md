@@ -73,7 +73,7 @@ digraph tdd_cycle {
 Write one minimal test showing what should happen.
 
 <Good>
-```typescript
+```javascript
 test('retries failed operations 3 times', async () => {
   let attempts = 0;
   const operation = () => {
@@ -92,7 +92,7 @@ Clear name, tests real behavior, one thing
 </Good>
 
 <Bad>
-```typescript
+```javascript
 test('retry works', async () => {
   const mock = jest.fn()
     .mockRejectedValueOnce(new Error())
@@ -115,7 +115,7 @@ Vague name, tests mock not code
 **MANDATORY. Never skip.**
 
 ```bash
-npm test path/to/test.test.ts
+npm test path/to/test.test.js
 ```
 
 Confirm:
@@ -132,8 +132,8 @@ Confirm:
 Write simplest code to pass the test.
 
 <Good>
-```typescript
-async function retryOperation<T>(fn: () => Promise<T>): Promise<T> {
+```javascript
+async function retryOperation(fn) {
   for (let i = 0; i < 3; i++) {
     try {
       return await fn();
@@ -148,15 +148,9 @@ Just enough to pass
 </Good>
 
 <Bad>
-```typescript
-async function retryOperation<T>(
-  fn: () => Promise<T>,
-  options?: {
-    maxRetries?: number;
-    backoff?: 'linear' | 'exponential';
-    onRetry?: (attempt: number) => void;
-  }
-): Promise<T> {
+```javascript
+async function retryOperation(fn, options = {}) {
+  // options: maxRetries, backoff ('linear' | 'exponential'), onRetry(attempt)
   // YAGNI
 }
 ```
@@ -170,7 +164,7 @@ Don't add features, refactor other code, or "improve" beyond the test.
 **MANDATORY.**
 
 ```bash
-npm test path/to/test.test.ts
+npm test path/to/test.test.js
 ```
 
 Confirm:
@@ -184,8 +178,7 @@ Confirm:
 
 **"Other tests" means the project's suite, not just your file.** A
 green run of the test you wrote is not a green suite. Before you call
-the change done, run the project's test command (bare `pytest`,
-`npm test`, `cargo test` — whatever the repo uses) even when your task
+the change done, run the project's test command (`npm test` in this repo) even when your task
 named only one test file. A scope statement in your task bounds the
 deliverable, not your verification. Any failure that run shows —
 including one you didn't cause — goes in your report by name; a red
@@ -258,7 +251,7 @@ When writing or changing any test, read [writing-good-tests.md](writing-good-tes
 **Bug:** Empty email accepted
 
 **RED**
-```typescript
+```javascript
 test('rejects empty email', async () => {
   const result = await submitForm({ email: '' });
   expect(result.error).toBe('Email required');
@@ -272,8 +265,8 @@ FAIL: expected 'Email required', got undefined
 ```
 
 **GREEN**
-```typescript
-function submitForm(data: FormData) {
+```javascript
+function submitForm(data) {
   if (!data.email?.trim()) {
     return { error: 'Email required' };
   }

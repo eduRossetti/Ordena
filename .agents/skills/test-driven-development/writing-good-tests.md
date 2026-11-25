@@ -29,7 +29,7 @@ fixtures; table-driven tests with literal `want` values are the preferred
 shape. An expectation computed by the code under test — or its helpers —
 passes no matter what that code does:
 
-```typescript
+```javascript
 // ❌ Mirror assertion: the same builder computes both sides — always true
 const expected = buildSearchQuery({ tag: 'urgent' });
 expect(buildSearchQuery({ tag: 'urgent' })).toBe(expected);
@@ -85,7 +85,7 @@ is present and fails when it is absent — it says nothing about the
 component. Assert the real component's behavior; if the mock is what you
 are checking, unmock it or delete the assertion.
 
-```typescript
+```javascript
 // ✅ Real behavior
 expect(screen.getByRole('navigation')).toBeInTheDocument();
 
@@ -101,14 +101,14 @@ before replacing it; mock the slow or external operation and keep what
 the test depends on real. When unsure, run the test against the real
 implementation first and observe what actually needs to happen.
 
-```typescript
+```javascript
 // ❌ The mock swallows the config write that duplicate detection reads
-vi.mock('ToolCatalog', () => ({
-  discoverAndCacheTools: vi.fn().mockResolvedValue(undefined)
+jest.mock('ToolCatalog', () => ({
+  discoverAndCacheTools: jest.fn().mockResolvedValue(undefined)
 }));
 
 // ✅ Mock only the slow server startup; the config write stays real
-vi.mock('MCPServerManager');
+jest.mock('MCPServerManager');
 ```
 
 **Make doubles specific.** When arguments, call counts, or ordering are

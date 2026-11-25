@@ -38,12 +38,12 @@ Error: git init failed in ~/project/packages/core
 
 ### 2. Find Immediate Cause
 **What code directly causes this?**
-```typescript
+```javascript
 await execFileAsync('git', ['init'], { cwd: projectDir });
 ```
 
 ### 3. Ask: What Called This?
-```typescript
+```javascript
 WorktreeManager.createSessionWorktree(projectDir, sessionId)
   → called by Session.initializeWorkspace()
   → called by Session.create()
@@ -58,7 +58,7 @@ WorktreeManager.createSessionWorktree(projectDir, sessionId)
 
 ### 5. Find Original Trigger
 **Where did empty string come from?**
-```typescript
+```javascript
 const context = setupCoreTest(); // Returns { tempDir: '' }
 Project.create('name', context.tempDir); // Accessed before beforeEach!
 ```
@@ -67,9 +67,9 @@ Project.create('name', context.tempDir); // Accessed before beforeEach!
 
 When you can't trace manually, add instrumentation:
 
-```typescript
+```javascript
 // Before the problematic operation
-async function gitInit(directory: string) {
+async function gitInit(directory) {
   const stack = new Error().stack;
   console.error('DEBUG git init:', {
     directory,
@@ -101,7 +101,7 @@ If something appears during tests but you don't know which test:
 Use the bisection script `find-polluter.sh` in this directory:
 
 ```bash
-bash ./find-polluter.sh '.git' 'src/**/*.test.ts'
+bash ./find-polluter.sh '.git' 'src/**/*.test.js'
 ```
 
 Runs tests one-by-one, stops at first polluter. See script for usage.

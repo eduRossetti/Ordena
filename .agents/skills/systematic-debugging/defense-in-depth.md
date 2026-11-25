@@ -22,8 +22,8 @@ Different layers catch different cases:
 ### Layer 1: Entry Point Validation
 **Purpose:** Reject obviously invalid input at API boundary
 
-```typescript
-function createProject(name: string, workingDirectory: string) {
+```javascript
+function createProject(name, workingDirectory) {
   if (!workingDirectory || workingDirectory.trim() === '') {
     throw new Error('workingDirectory cannot be empty');
   }
@@ -40,8 +40,8 @@ function createProject(name: string, workingDirectory: string) {
 ### Layer 2: Business Logic Validation
 **Purpose:** Ensure data makes sense for this operation
 
-```typescript
-function initializeWorkspace(projectDir: string, sessionId: string) {
+```javascript
+function initializeWorkspace(projectDir, sessionId) {
   if (!projectDir) {
     throw new Error('projectDir required for workspace initialization');
   }
@@ -52,8 +52,8 @@ function initializeWorkspace(projectDir: string, sessionId: string) {
 ### Layer 3: Environment Guards
 **Purpose:** Prevent dangerous operations in specific contexts
 
-```typescript
-async function gitInit(directory: string) {
+```javascript
+async function gitInit(directory) {
   // In tests, refuse git init outside temp directories
   if (process.env.NODE_ENV === 'test') {
     const normalized = normalize(resolve(directory));
@@ -72,8 +72,8 @@ async function gitInit(directory: string) {
 ### Layer 4: Debug Instrumentation
 **Purpose:** Capture context for forensics
 
-```typescript
-async function gitInit(directory: string) {
+```javascript
+async function gitInit(directory) {
   const stack = new Error().stack;
   logger.debug('About to git init', {
     directory,

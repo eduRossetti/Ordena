@@ -124,14 +124,31 @@ Fonte única das skills: `.agents/skills/` (lida por Codex e Antigravity). `.cla
 
 > **Regra para qualquer IA:** crie, edite e apague skills **somente em `.agents/skills/`**. Nunca escreva em `.claude/skills/` (é o mesmo diretório por link; criar lá confunde e pode quebrar o link). Não copie skills para outras pastas (`.cursor/`, `.codex/`, etc.).
 
+**Antes de instalar qualquer skill de terceiro:** leia o `SKILL.md` inteiro, confira se contradiz este arquivo ou outra skill, e registre-a em `docs/skills.md`. Só instale o que o usuário aprovou.
+
 Skills de terceiros entram com `npx skills add` (registradas em `skills-lock.json`) e sem conteúdo específico de uma ferramenta. Depois de instalar, confira que `.claude/skills` continua sendo link (`ls -la .claude`) e que não surgiu cópia.
 
 - `criar-endpoint` — fatia completa model → `route.js` (controller) + testes.
 - `alterar-banco` — mudar `schema.prisma`, migration, models e rotas afetados.
 - `criar-tela` — telas/componentes mobile-first consumindo a API.
 - `escrever-testes` — padrões de Jest (integration por método e unit de lógica pura).
+- `test-driven-development`, `systematic-debugging`, `verification-before-completion`, `receiving-code-review` — (terceiros, Superpowers) processo de qualidade; veja as regras abaixo.
 - `frontend-design` — (terceiro, Anthropic) direção visual de telas novas; siga junto com `criar-tela` e as regras mobile-first.
 
-- **Superpowers** (terceiro, [obra/superpowers](https://github.com/obra/superpowers)) — skills de processo: `brainstorming`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `dispatching-parallel-agents`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`, `requesting-code-review`, `receiving-code-review`, `using-git-worktrees`, `finishing-a-development-branch`, `using-superpowers`, `writing-skills`, `diagnosing-superpowers`. Em conflito, as regras deste arquivo e das skills do Ordena valem mais.
+### Regras de precedência e de convivência entre skills
+
+Ordem de autoridade: **AGENTS.md > skills do Ordena > skills de terceiros**. Inventário (o que cada skill faz, dono do assunto, quais são opcionais): `docs/skills.md`.
+
+- **Idioma:** conversa e texto de interface em pt-BR, mesmo que a skill de terceiro esteja em inglês. Os exemplos das skills de terceiros foram convertidos para JavaScript/Jest (alteração local: `npx skills update` os sobrescreveria; refaça a conversão se atualizar).
+- **Onde gravar skills:** só em `.agents/skills/`.
+- **Specs e planos:** quando houver, em `docs/specs/` e `docs/plans/` (`AAAA-MM-DD-<tema>.md`). Só para features grandes.
+- **TDD:** obrigatório para models e rotas (teste de integração falhando primeiro, depois a implementação), inclusive ao corrigir bug: primeiro o teste que reproduz. Em telas e componentes não é exigido (a regra "apague o código escrito antes do teste" da skill `test-driven-development` vale só para models e rotas); valide com `npm run lint` e o navegador.
+- **Verificação e depuração:** só diga que algo passa/está pronto depois de rodar `npm test`, `npm run lint` e `npm run format:check` e ler a saída (`verification-before-completion`). Ao depurar, ache a causa raiz antes de corrigir (`systematic-debugging`); nunca imprima `.env` nem segredos como "diagnóstico".
+- **Nomes das skills:** as skills de terceiros citam `superpowers:<nome>`; aqui elas se chamam só `<nome>`.
+- **Respostas ao usuário:** em pt-BR; o tom seco do `receiving-code-review` (sem "você tem toda razão!") vale, mas educação básica também.
+- **Proporção:** tarefa pequena e clara não precisa de spec nem de plano.
+- **Banco de teste único:** `ordena_test` (porta 5432) é compartilhado e os testes rodam em série. Nunca rode testes de integração em paralelo (vários agentes/worktrees ao mesmo tempo). Em worktree, copie o `.env` (não é versionado) antes de testar.
+- **Git:** não faça commit, push, merge nem PR sem o usuário pedir.
+- **Visual:** `frontend-design` define a estética; `criar-tela` é dono das regras mobile (toque, `dvh`, navegação). Em conflito de estética, vale `docs/design.md` quando existir.
 
 Ao criar uma convenção nova que se repete, transforme em skill e liste aqui.

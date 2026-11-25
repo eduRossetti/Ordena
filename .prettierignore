@@ -5,19 +5,8 @@ package-lock.json
 infra/prisma/generated
 infra/prisma/migrations
 # skills de terceiros (hash no skills-lock.json): não reformatar
-.agents/skills/brainstorming
-.agents/skills/diagnosing-superpowers
-.agents/skills/dispatching-parallel-agents
-.agents/skills/executing-plans
-.agents/skills/finishing-a-development-branch
 .agents/skills/frontend-design
 .agents/skills/receiving-code-review
-.agents/skills/requesting-code-review
-.agents/skills/subagent-driven-development
 .agents/skills/systematic-debugging
 .agents/skills/test-driven-development
-.agents/skills/using-git-worktrees
-.agents/skills/using-superpowers
 .agents/skills/verification-before-completion
-.agents/skills/writing-plans
-.agents/skills/writing-skills
