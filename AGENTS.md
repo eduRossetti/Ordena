@@ -118,11 +118,20 @@ Login será e-mail + senha (Auth.js Credentials, `bcryptjs`) — ainda **não im
 3. Endpoint novo → um teste de integração por método e segue o padrão controller → model.
 4. Sem segredos no git (`.env` é local; só `.env.example` é versionado).
 
-## Skills (`.claude/skills/`)
+## Skills (`.agents/skills/`)
+
+Fonte única das skills: `.agents/skills/` (lida por Codex e Antigravity). `.claude/skills` é um link simbólico para ela (Claude Code).
+
+> **Regra para qualquer IA:** crie, edite e apague skills **somente em `.agents/skills/`**. Nunca escreva em `.claude/skills/` (é o mesmo diretório por link; criar lá confunde e pode quebrar o link). Não copie skills para outras pastas (`.cursor/`, `.codex/`, etc.).
+
+Skills de terceiros entram com `npx skills add` (registradas em `skills-lock.json`) e sem conteúdo específico de uma ferramenta. Depois de instalar, confira que `.claude/skills` continua sendo link (`ls -la .claude`) e que não surgiu cópia.
 
 - `criar-endpoint` — fatia completa model → `route.js` (controller) + testes.
 - `alterar-banco` — mudar `schema.prisma`, migration, models e rotas afetados.
 - `criar-tela` — telas/componentes mobile-first consumindo a API.
 - `escrever-testes` — padrões de Jest (integration por método e unit de lógica pura).
+- `frontend-design` — (terceiro, Anthropic) direção visual de telas novas; siga junto com `criar-tela` e as regras mobile-first.
+
+- **Superpowers** (terceiro, [obra/superpowers](https://github.com/obra/superpowers)) — skills de processo: `brainstorming`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `dispatching-parallel-agents`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`, `requesting-code-review`, `receiving-code-review`, `using-git-worktrees`, `finishing-a-development-branch`, `using-superpowers`, `writing-skills`, `diagnosing-superpowers`. Em conflito, as regras deste arquivo e das skills do Ordena valem mais.
 
 Ao criar uma convenção nova que se repete, transforme em skill e liste aqui.
