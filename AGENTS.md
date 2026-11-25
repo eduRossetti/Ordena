@@ -46,7 +46,7 @@ src/app/api/v1/**/route.js (controller)  →  src/models/<recurso>.js (model)  �
 | Model      | `src/models/<recurso>.js`           | Regras de negócio, permissões, validação (Zod) e acesso ao banco. Lança erros de `infra/errors` | Conhecer Request/Response |
 | View       | `src/app/(...)/`, `src/components/` | React mobile-first; **lê e escreve tudo via API** (`fetch` em `/api/v1`)                        | Importar models/Prisma    |
 
-`infra/` guarda o que é transversal: `controller.js` (`errorHandlers`: `onError` e `onNoMatch`), `errors.js` (erros públicos), `database.js` (Prisma singleton), `prisma/` (schema + migrations), `compose.yaml` (Postgres).
+`infra/` guarda o que é transversal: `controller.js` (`errorHandlers`: `onError` e `onNoMatch`), `errors.js` (erros públicos), `token.js` (JWT e refresh token, sem banco), `database.js` (Prisma singleton), `prisma/` (schema + migrations), `compose.yaml` (Postgres).
 O ESLint **bloqueia** importar `infra/database` (e o client Prisma) em `.js`/`.jsx` de `src/` fora de `src/models/`. Os testes (`tests/`) ficam fora dessa regra de propósito: helpers como `tests/orchestrator.js` podem usar o Prisma para semear e limpar dados, mas o código de produção não.
 
 ### Padrão de controller (`route.js`)
@@ -57,29 +57,38 @@ import controller from 'infra/controller';
 import task from '@/models/task';
 
 const router = createEdgeRouter();
-router.get(getHandler);
-router.post(postHandler);
+router.get(controller.authenticate, getHandler);
+router.post(controller.authenticate, postHandler);
 
 // Exporte todos os métodos: os não registrados caem no onNoMatch (405).
 const handler = router.handler(controller.errorHandlers);
 export { handler as GET, handler as POST, handler as PUT, handler as PATCH, handler as DELETE };
 
-// `user` = usuário autenticado (a autenticação ainda não existe; veja "Usuário autenticado").
+// `ctx.user` = usuário autenticado, posto por `controller.authenticate` (veja "Usuário autenticado").
 async function getHandler(request, ctx) {
   const { groupId } = await ctx.params;
-  return Response.json(await task.findAllByGroupId(user, groupId), { status: 200 });
+  return Response.json(await task.findAllByGroupId(ctx.user, groupId), { status: 200 });
 }
 
 async function postHandler(request, ctx) {
   const { groupId } = await ctx.params;
-  const newTask = await task.create(user, groupId, await request.json());
+  const newTask = await task.create(ctx.user, groupId, await controller.readJson(request));
   return Response.json(newTask, { status: 201 });
 }
 ```
 
 ### Usuário autenticado
 
-Todo model que depende de quem chama recebe o **usuário como primeiro argumento** (`task.create(user, groupId, input)`) e faz a checagem de membro/papel com ele. O controller só obtém o usuário (sessão) e repassa; nunca decide permissão. Enquanto o login não existe, não crie endpoints de grupo/tarefa: implemente a autenticação antes, ou os testes passam um usuário criado direto no banco.
+Todo model que depende de quem chama recebe o **usuário como primeiro argumento** (`task.create(user, groupId, input)`) e faz a checagem de membro/papel com ele. O controller só obtém o usuário e repassa; nunca decide permissão.
+
+Autenticação (JWT com `jose`, só backend por enquanto):
+
+- **Access token**: JWT HS256 de 15 min no cookie `access_token` (httpOnly, `SameSite=Lax`, `Secure` em produção). Payload só de identidade (`sub`, `username`, `name`, `sid`, `iss`, `aud`); **nunca** senha, e-mail ou papéis. Papel de grupo muda a qualquer hora, então o model confere no banco (`group_members`).
+- **Refresh token**: string opaca de 30 dias no cookie `refresh_token` (`Path=/api/v1/sessions`); o banco guarda só o hash sha256 (`sessions`). Cada uso rotaciona; reapresentar um já usado revoga todas as sessões do usuário.
+- Rota protegida: `router.get(controller.authenticate, handler)`. O middleware põe `ctx.user` (`{ id, username, name, sessionId }`) ou lança `UnauthorizedError`. Aplique por método (não com `router.use`) para que métodos não registrados continuem devolvendo 405.
+- Corpo JSON: use `controller.readJson(request)` (JSON inválido vira 400, não 500).
+- `JWT_SECRET` (mín. 32 caracteres) vem do `.env`. Rotas: `POST /users` (cadastro), `POST|DELETE /sessions` (login, logout), `POST /sessions/refresh`, `GET /user` (usuário atual).
+- Em testes, use `orchestrator.createUser()` e `orchestrator.createSession(user)` (devolve a string `cookie`).
 
 ### Padrão de model
 
@@ -99,7 +108,8 @@ Referência viva: `/api/v1/status` (`src/app/api/v1/status/route.js` → `src/mo
 
 User (`username` único) · Group · GroupMember (role OWNER/ADMIN/MEMBER) · GroupInvite (convite por username: PENDING/ACCEPTED/DECLINED/CANCELED) · Task (TODO/DOING/DONE, prioridade) · TaskAssignee (N:N, várias pessoas por tarefa).
 Schema em `infra/prisma/schema.prisma`; detalhes em `docs/arquitetura.md`.
-Login será e-mail + senha (Auth.js Credentials, `bcryptjs`) — ainda **não implementado**.
+**Hoje o schema só tem `User` e `Session`**; Group, GroupMember, GroupInvite, Task e TaskAssignee estão planejados (desenho em `docs/arquitetura.md`) e entram, com migration própria, junto com a feature que os usa.
+Login por e-mail + senha (`bcryptjs`) com JWT (`jose`) e refresh token em `sessions` (ver "Usuário autenticado"). Telas de login/cadastro ainda não existem.
 
 ## Convenções
 

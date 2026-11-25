@@ -21,6 +21,7 @@ Modelo vivo: `/api/v1/status` (`src/app/api/v1/status/route.js`, `src/models/sta
    - `const router = createEdgeRouter()` (de `next-connect`) e um handler por método: `router.get(getHandler)`.
    - O handler lê entrada (`await request.json()`, `await ctx.params`, `new URL(request.url).searchParams`), chama o model e responde com `Response.json(obj, { status })`. Sem regra de negócio, sem Prisma.
    - `const handler = router.handler(controller.errorHandlers)` (de `infra/controller`) e `export { handler as GET, handler as POST, handler as PUT, handler as PATCH, handler as DELETE }`: exporte **todos** para que métodos não registrados devolvam 405 no formato padrão.
+   - Rota que exige login: `router.get(controller.authenticate, getHandler)` e use `ctx.user` (passe ao model como 1º argumento). Registre por método, não com `router.use`, para manter o 405. Corpo JSON: `await controller.readJson(request)`.
    - Params dinâmicos: `[id]/route.js`. Neste Next, `params` é uma **Promise**: use `await ctx.params`.
 5. **Testes**: um arquivo por método em `tests/integration/api/v1/<rota>/<metodo>.test.js` (escritos no passo 2; complete os casos de erro aqui). Além dos métodos implementados, cubra os **não implementados com 405** (como `status/post.test.js`). Veja `escrever-testes`.
 6. Rode `npm test && npm run lint && npm run format:check`.

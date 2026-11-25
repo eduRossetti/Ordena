@@ -7,126 +7,30 @@ datasource db {
   provider = "postgresql"
 }
 
-enum GroupRole {
-  OWNER
-  ADMIN
-  MEMBER
-}
-
-enum InviteStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-  CANCELED
-}
-
-enum TaskStatus {
-  TODO
-  DOING
-  DONE
-}
-
-enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
-}
-
 model User {
   id           String   @id @default(uuid(7)) @db.Uuid
   username     String   @unique
   name         String
   email        String   @unique
   passwordHash String   @map("password_hash")
-  avatarUrl    String?  @map("avatar_url")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  groupsCreated   Group[]
-  memberships     GroupMember[]
-  invitesReceived GroupInvite[]  @relation("InvitedUser")
-  invitesSent     GroupInvite[]  @relation("InvitedBy")
-  tasksCreated    Task[]
-  assignments     TaskAssignee[]
+  sessions Session[]
 
   @@map("users")
 }
 
-model Group {
-  id          String   @id @default(uuid(7)) @db.Uuid
-  name        String
-  description String?
-  createdById String   @db.Uuid @map("created_by_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+model Session {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @db.Uuid @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
 
-  createdBy User          @relation(fields: [createdById], references: [id])
-  members   GroupMember[]
-  invites   GroupInvite[]
-  tasks     Task[]
-
-  @@map("groups")
-}
-
-model GroupMember {
-  groupId  String    @db.Uuid @map("group_id")
-  userId   String    @db.Uuid @map("user_id")
-  role     GroupRole @default(MEMBER)
-  joinedAt DateTime  @default(now()) @map("joined_at")
-
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([groupId, userId])
-  @@map("group_members")
-}
-
-model GroupInvite {
-  id            String       @id @default(uuid(7)) @db.Uuid
-  groupId       String       @db.Uuid @map("group_id")
-  invitedUserId String       @db.Uuid @map("invited_user_id")
-  invitedById   String       @db.Uuid @map("invited_by_id")
-  status        InviteStatus @default(PENDING)
-  createdAt     DateTime     @default(now()) @map("created_at")
-  respondedAt   DateTime?    @map("responded_at")
-
-  group       Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  invitedUser User  @relation("InvitedUser", fields: [invitedUserId], references: [id], onDelete: Cascade)
-  invitedBy   User  @relation("InvitedBy", fields: [invitedById], references: [id])
-
-  @@index([invitedUserId, status])
-  @@map("group_invites")
-}
-
-model Task {
-  id          String       @id @default(uuid(7)) @db.Uuid
-  groupId     String       @db.Uuid @map("group_id")
-  title       String
-  description String?
-  status      TaskStatus   @default(TODO)
-  priority    TaskPriority @default(MEDIUM)
-  dueDate     DateTime?    @map("due_date")
-  createdById String       @db.Uuid @map("created_by_id")
-  completedAt DateTime?    @map("completed_at")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-
-  group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  createdBy User           @relation(fields: [createdById], references: [id])
-  assignees TaskAssignee[]
-
-  @@index([groupId, status])
-  @@map("tasks")
-}
-
-model TaskAssignee {
-  taskId     String   @db.Uuid @map("task_id")
-  userId     String   @db.Uuid @map("user_id")
-  assignedAt DateTime @default(now()) @map("assigned_at")
-
-  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([taskId, userId])
-  @@map("task_assignees")
+  @@index([userId])
+  @@map("sessions")
 }
