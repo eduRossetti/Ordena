@@ -47,7 +47,7 @@ src/app/api/v1/**/route.js (controller)  →  src/models/<recurso>.js (model)  �
 | View       | `src/app/(...)/`, `src/components/` | React mobile-first; **lê e escreve tudo via API** (`fetch` em `/api/v1`)                        | Importar models/Prisma    |
 
 `infra/` guarda o que é transversal: `controller.js` (`errorHandlers`: `onError` e `onNoMatch`), `errors.js` (erros públicos), `database.js` (Prisma singleton), `prisma/` (schema + migrations), `compose.yaml` (Postgres).
-O ESLint **bloqueia** importar `infra/database` (e o client Prisma) em `.js`/`.jsx` fora de `src/models/`.
+O ESLint **bloqueia** importar `infra/database` (e o client Prisma) em `.js`/`.jsx` de `src/` fora de `src/models/`. Os testes (`tests/`) ficam fora dessa regra de propósito: helpers como `tests/orchestrator.js` podem usar o Prisma para semear e limpar dados, mas o código de produção não.
 
 ### Padrão de controller (`route.js`)
 

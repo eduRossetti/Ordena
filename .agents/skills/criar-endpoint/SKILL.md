@@ -22,7 +22,7 @@ Modelo vivo: `/api/v1/status` (`src/app/api/v1/status/route.js`, `src/models/sta
    - O handler lê entrada (`await request.json()`, `await ctx.params`, `new URL(request.url).searchParams`), chama o model e responde com `Response.json(obj, { status })`. Sem regra de negócio, sem Prisma.
    - `const handler = router.handler(controller.errorHandlers)` (de `infra/controller`) e `export { handler as GET, handler as POST, handler as PUT, handler as PATCH, handler as DELETE }`: exporte **todos** para que métodos não registrados devolvam 405 no formato padrão.
    - Params dinâmicos: `[id]/route.js`. Neste Next, `params` é uma **Promise**: use `await ctx.params`.
-5. **Testes**: um arquivo por método em `tests/integration/api/v1/<rota>/<metodo>.test.js` (escritos no passo 2; complete os casos de erro aqui). Veja `escrever-testes`.
+5. **Testes**: um arquivo por método em `tests/integration/api/v1/<rota>/<metodo>.test.js` (escritos no passo 2; complete os casos de erro aqui). Além dos métodos implementados, cubra os **não implementados com 405** (como `status/post.test.js`). Veja `escrever-testes`.
 6. Rode `npm test && npm run lint && npm run format:check`.
 
 ## Regras
