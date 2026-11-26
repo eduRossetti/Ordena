@@ -37,48 +37,34 @@ Transversal em `infra/`: `controller.js` (`errorHandlers` do next-connect: erro 
 
 ## Modelo de dados
 
-Hoje o schema tem só o que já tem código por trás. O resto entra, com migration própria, junto com a feature que o usa.
-
 ```
-User ─< Session
-```
-
-| Tabela     | Campos principais                                                          | Observações                                                                                                                                 |
-| ---------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`    | id, username (único), name, email (único), password_hash                   | Convite será feito pelo `username`                                                                                                          |
-| `sessions` | id, user_id, token_hash (único, sha256 do refresh), expires_at, revoked_at | Uma linha por login/aparelho; refresh rotaciona (revoga a linha e cria outra); reuso de refresh revogado revoga todas as sessões do usuário |
-
-### Planejado (ainda sem tabela)
-
-Removido na migration `drop_unused_tables`; recriar com a feature correspondente, seguindo este desenho:
-
-```
-User ─┬─< GroupMember >─┬─ Group ─┬─< Task ─< TaskAssignee >─ User
-      │                 │         └─< GroupInvite
-      └─ (createdBy)    └─ role: OWNER | ADMIN | MEMBER
+User ─┬─< Session
+      └─1:0..1─ GroupMember >─ Group ─┬─< Task ─< TaskAssignee >─ User
+                  (role)              └─< GroupInvite (invited_user, invited_by)
 ```
 
-| Tabela           | Campos principais                                                                         | Observações                                                                                                                                                                                                                    |
-| ---------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `groups`         | id, name, description, created_by_id                                                      | Criador vira `OWNER` em `group_members`                                                                                                                                                                                        |
-| `group_members`  | group_id + user_id (PK), role, joined_at                                                  | Base de todas as checagens de permissão                                                                                                                                                                                        |
-| `group_invites`  | id, group_id, invited_user_id, invited_by_id, status, responded_at                        | Status PENDING/ACCEPTED/DECLINED/CANCELED; 1 pendente por pessoa+grupo (índice único parcial `WHERE status = 'PENDING'`, migration SQL manual; o model traduz a violação em `ConflictError`); índice (invited_user_id, status) |
-| `tasks`          | id, group_id, title, description, status, priority, due_date, created_by_id, completed_at | Status TODO/DOING/DONE; prioridade LOW/MEDIUM/HIGH; índice (group_id, status)                                                                                                                                                  |
-| `task_assignees` | task_id + user_id (PK), assigned_at                                                       | N:N: várias pessoas por tarefa                                                                                                                                                                                                 |
-
-Também adiado: `users.avatar_url` (volta com o upload de avatar).
+| Tabela           | Campos principais                                                                          | Observações                                                                                                                                                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`          | id, username (único), name, email (único), password_hash                                   | Convite feito pelo `username`; `avatar_url` adiado até o upload de avatar                                                                                                                                                          |
+| `sessions`       | id, user_id, token_hash (único, sha256 do refresh), expires_at, revoked_at                 | Uma linha por login/aparelho; refresh rotaciona (revoga a linha e cria outra); reuso de refresh revogado revoga todas as sessões do usuário                                                                                        |
+| `groups`         | id, name, description, created_at, updated_at                                              | O dono é representado pelo vínculo `OWNER` em `group_members`                                                                                                                                                                      |
+| `group_members`  | group_id + user_id (PK), role (`GroupRole`), joined_at                                     | `UNIQUE (user_id)` garante 1 grupo por usuário; índice único parcial `(group_id) WHERE role = 'OWNER'` garante 1 dono por grupo; base de todas as checagens de permissão                                                           |
+| `group_invites`  | id, group_id, invited_user_id, invited_by_id?, status (`InviteStatus`), responded_at       | Status PENDING/ACCEPTED/DECLINED/CANCELED; índice único parcial `(group_id, invited_user_id) WHERE status = 'PENDING'` (traduzido em `ConflictError`); índice `(invited_user_id, status)`; `invited_by_id` com `onDelete: SetNull` |
+| `tasks`          | id, group_id, title, description, status, priority, due_date, created_by_id?, completed_at | Status TODO/DOING/DONE; prioridade LOW/MEDIUM/HIGH; índice `(group_id, status)`; `created_by_id` opcional com `onDelete: SetNull` (tarefa sobrevive à exclusão do autor)                                                           |
+| `task_assignees` | task_id + user_id (PK), assigned_at                                                        | N:N: várias pessoas por tarefa; cascade ao apagar tarefa ou usuário; limpo para o grupo quando o membro sai ou é removido                                                                                                          |
 
 > Todos os ids (PKs e FKs) são `UUID` nativo do Postgres, gerados como UUID v7 (`@default(uuid(7)) @db.Uuid`).
 
-## Fluxos principais (a implementar)
+## Fluxos principais
 
-- **Convite**: membro (OWNER/ADMIN) busca usuário por `username` → cria `GroupInvite` PENDING → convidado vê convites pendentes dentro do app → aceita (cria `GroupMember`, marca ACCEPTED) ou recusa.
-- **Tarefa**: membro cria tarefa no grupo, atribui a membros (`TaskAssignee`), muda status; `completed_at` preenchido ao ir para DONE.
+- **Grupos e papéis**: cada usuário participa de no máximo 1 grupo (`GET /user` inclui `membership: { groupId, groupName, role } | null`). Criar grupo coloca o criador como `OWNER`. `OWNER` pode promover/rebaixar `ADMIN`, remover `ADMIN`, transferir a posse (`PUT /groups/[groupId]/ownership`, que rebaixa o antigo dono a `ADMIN`) e apagar o grupo. Para sair, o `OWNER` precisa transferir a posse antes — exceto se for o único membro, caso em que sair apaga o grupo. Não membro recebe 404 (não revela a existência do grupo).
+- **Convite**: `OWNER`/`ADMIN` convida por `username` (`POST /groups/[groupId]/invites`) → cria `GroupInvite` `PENDING` → convidado vê convites em `GET /user/invites` → aceita ou recusa em `PATCH /invites/[inviteId]`. Aceitar sai automaticamente do grupo anterior (aplicando a regra de saída do `OWNER`) e cria vínculo `MEMBER`.
+- **Tarefa**: qualquer membro cria (`POST /groups/[groupId]/tasks`) e muda o status; editar outros campos (incluindo `assigneeIds`, restritos a membros do grupo) ou apagar exige ser autor, `ADMIN` ou `OWNER`. Ir para `DONE` preenche `completed_at`; sair de `DONE` limpa.
 - **Auth**: e-mail + senha → JWT de acesso (15 min, cookie httpOnly) + refresh token opaco (30 dias, hash em `sessions`, rotação a cada uso). `controller.authenticate` valida o JWT e põe `ctx.user`; o controller repassa o usuário como **primeiro argumento** do model (`task.create(user, groupId, input)`), que decide a permissão.
 
 ## Fora do escopo da base atual
 
-Logout, autorização por rota/grupo na tela (o proxy só checa se há sessão), CRUDs de grupo/tarefa/convite e suas telas, service worker (offline/cache). CI e deploy já existem: veja `docs/deploy.md`.
+Telas de grupos, convites e tarefas, logout na interface, autorização por rota/grupo na tela (o proxy só checa se há sessão), service worker (offline/cache), notificações, comentários e histórico/auditoria de tarefas. CI e deploy já existem: veja `docs/deploy.md`.
 
 ## Decisões
 

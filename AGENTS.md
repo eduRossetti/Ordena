@@ -112,9 +112,8 @@ A `main` é protegida: só entra por PR com os checks do CI (`Lint e formataçã
 
 ## Domínio
 
-User (`username` único) · Group · GroupMember (role OWNER/ADMIN/MEMBER) · GroupInvite (convite por username: PENDING/ACCEPTED/DECLINED/CANCELED) · Task (TODO/DOING/DONE, prioridade) · TaskAssignee (N:N, várias pessoas por tarefa).
-Schema em `infra/prisma/schema.prisma`; detalhes em `docs/arquitetura.md`.
-**Hoje o schema só tem `User` e `Session`**; Group, GroupMember, GroupInvite, Task e TaskAssignee estão planejados (desenho em `docs/arquitetura.md`) e entram, com migration própria, junto com a feature que os usa.
+User (`username` único) · Session · Group · GroupMember (1 grupo por usuário, role OWNER/ADMIN/MEMBER, 1 OWNER por grupo) · GroupInvite (convite por username: PENDING/ACCEPTED/DECLINED/CANCELED, 1 pendente por pessoa+grupo) · Task (TODO/DOING/DONE, prioridade LOW/MEDIUM/HIGH) · TaskAssignee (N:N, várias pessoas por tarefa).
+Schema completo em `infra/prisma/schema.prisma`; regras de permissão, models (`group`, `invite`, `task`) e rotas em `/api/v1` detalhados em `docs/arquitetura.md`.
 Login por e-mail + senha (`bcryptjs`) com JWT (`jose`) e refresh token em `sessions` (ver "Usuário autenticado"). Telas: `/signup` e `/login` em `(auth)`; a home `/` é a área logada provisória em `(app)`. `src/proxy.js` (proxy do Next, antigo middleware) protege toda tela, exceto `/login`, `/signup` e `/refresh` (APIs, `_next` e assets ficam fora; `/api/v1` responde 401 sozinha). Sem JWT de acesso válido, redireciona para `/refresh?next=<tela>`, que renova a sessão com o refresh token (só ali o navegador o envia, por causa do `Path=/api/v1/sessions`) e volta à tela; se falhar, vai para `/login`. Tela nova já nasce protegida; para abri-la a deslogados, inclua o caminho em `PUBLIC_PATHS`. O refresh também é automático nas chamadas de API: `apiFetch` renova e repete uma vez ao receber 401 (veja `src/lib/api.js`).
 
 ## Convenções
