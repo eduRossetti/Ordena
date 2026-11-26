@@ -11,6 +11,7 @@ import {
 import password from '@/models/password';
 import user from '@/models/user';
 
+// Espelhado em src/lib/validation/user.js (validação do formulário). Mude os dois juntos.
 const loginSchema = z.object({
   email: z.email('Informe um e-mail válido.'),
   password: z

@@ -15,7 +15,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Stack
 
-Next.js (App Router) · JavaScript (sem TypeScript) · React · Tailwind · Prisma 7 + PostgreSQL · next-connect · Zod · Jest · ESLint · Prettier.
+Next.js (App Router) · JavaScript (sem TypeScript) · React · GitHub Primer (`@primer/react`) · Prisma 7 + PostgreSQL · next-connect · Zod · Jest · ESLint · Prettier.
 Textos de interface em **pt-BR**; código, rotas e nomes em **inglês**.
 
 ## Comandos
@@ -45,6 +45,8 @@ src/app/api/v1/**/route.js (controller)  →  src/models/<recurso>.js (model)  �
 | Controller | `src/app/api/v1/**/route.js`        | Router next-connect: lê entrada (body, params, query), chama o model, responde o recurso        | Regra de negócio, Prisma  |
 | Model      | `src/models/<recurso>.js`           | Regras de negócio, permissões, validação (Zod) e acesso ao banco. Lança erros de `infra/errors` | Conhecer Request/Response |
 | View       | `src/app/(...)/`, `src/components/` | React mobile-first; **lê e escreve tudo via API** (`fetch` em `/api/v1`)                        | Importar models/Prisma    |
+
+No front, `src/lib/` guarda o que não é componente: `api.js` (`apiFetch`, cliente da API para o navegador) e `validation/` (regras dos models espelhadas para validar o formulário antes de enviar; mudou a regra no model, mude lá também).
 
 `infra/` guarda o que é transversal: `controller.js` (`errorHandlers`: `onError` e `onNoMatch`), `errors.js` (erros públicos), `token.js` (JWT e refresh token, sem banco), `database.js` (Prisma singleton), `prisma/` (schema + migrations), `compose.yaml` (Postgres).
 O ESLint **bloqueia** importar `infra/database` (e o client Prisma) em `.js`/`.jsx` de `src/` fora de `src/models/`. Os testes (`tests/`) ficam fora dessa regra de propósito: helpers como `tests/orchestrator.js` podem usar o Prisma para semear e limpar dados, mas o código de produção não.
@@ -113,7 +115,7 @@ A `main` é protegida: só entra por PR com os checks do CI (`Lint e formataçã
 User (`username` único) · Group · GroupMember (role OWNER/ADMIN/MEMBER) · GroupInvite (convite por username: PENDING/ACCEPTED/DECLINED/CANCELED) · Task (TODO/DOING/DONE, prioridade) · TaskAssignee (N:N, várias pessoas por tarefa).
 Schema em `infra/prisma/schema.prisma`; detalhes em `docs/arquitetura.md`.
 **Hoje o schema só tem `User` e `Session`**; Group, GroupMember, GroupInvite, Task e TaskAssignee estão planejados (desenho em `docs/arquitetura.md`) e entram, com migration própria, junto com a feature que os usa.
-Login por e-mail + senha (`bcryptjs`) com JWT (`jose`) e refresh token em `sessions` (ver "Usuário autenticado"). Telas de login/cadastro ainda não existem.
+Login por e-mail + senha (`bcryptjs`) com JWT (`jose`) e refresh token em `sessions` (ver "Usuário autenticado"). Telas: `/signup` e `/login` em `(auth)`; a home `/` é a área logada provisória em `(app)` (sem proteção de rota nem refresh automático ainda).
 
 ## Convenções
 
@@ -157,6 +159,6 @@ Hoje só existem skills próprias do Ordena (inventário em `docs/skills.md`):
 - **Specs e planos:** quando houver, em `docs/specs/` e `docs/plans/` (`AAAA-MM-DD-<tema>.md`). Só para features grandes; tarefa pequena e clara não precisa de spec nem de plano.
 - **Banco de teste único:** `ordena_test` (porta 5432) é compartilhado e os testes rodam em série. Nunca rode testes de integração em paralelo (vários agentes/worktrees ao mesmo tempo). Em worktree, copie o `.env` (não é versionado) antes de testar.
 - **Git:** não faça commit, push, merge nem PR sem o usuário pedir.
-- **Visual:** a estética (paleta, tipografia, componentes) está em `docs/design.md`; `criar-tela` é dono das regras mobile (toque, `dvh`, navegação).
+- **Visual:** o design system (GitHub Primer, tema escuro fixo, tokens oficiais e regras de CSS Modules) está em `docs/design.md`; `criar-tela` é dono das regras mobile (toque, `dvh`, navegação).
 
 Ao criar uma convenção nova que se repete, transforme em skill e liste aqui.

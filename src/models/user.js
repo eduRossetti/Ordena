@@ -12,6 +12,7 @@ const publicSelect = {
   updatedAt: true,
 };
 
+// Espelhado em src/lib/validation/user.js (validação do formulário). Mude os dois juntos.
 const createSchema = z.object({
   username: z
     .string({ error: 'Informe o username.' })

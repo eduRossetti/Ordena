@@ -1,0 +1,14 @@
+.muted {
+  color: var(--fgColor-muted);
+}
+
+.username {
+  color: var(--fgColor-default);
+}
+
+.action {
+  /* Alvo de toque de 44px (o `large` do Primer tem 40px). */
+  --control-large-size: 2.75rem;
+
+  flex: 1;
+}
