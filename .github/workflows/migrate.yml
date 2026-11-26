@@ -1,26 +1,12 @@
-name: Migrations
+name: Migrations (manual)
 
-# Aplica `prisma migrate deploy` no banco do ambiente escolhido.
-# - PR para a main que mexe em migrations/schema: aplica em hml (o preview da Vercel usa esse banco).
-# - push na main que mexe em migrations/schema: aplica em produção.
-# - disparo manual (Actions → Migrations → Run workflow): escolhe hml ou produção.
+# As migrations são aplicadas automaticamente no build da Vercel (script `vercel-build`):
+# Production migra o banco de produção e Preview migra o de hml, cada um pela sua DATABASE_URL.
+# Este workflow é só para rodar à mão quando precisar (Actions → Migrations (manual) → Run workflow),
+# por exemplo para reaplicar ou conferir um banco sem fazer deploy.
 # A URL de cada banco fica no secret `DATABASE_URL` do GitHub Environment correspondente
 # (Settings → Environments → hml / production). Nunca no código.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'infra/prisma/migrations/**'
-      - 'infra/prisma/schema.prisma'
-      - 'prisma.config.js'
-      - '.github/workflows/migrate.yml'
-  push:
-    branches: [main]
-    paths:
-      - 'infra/prisma/migrations/**'
-      - 'infra/prisma/schema.prisma'
-      - 'prisma.config.js'
-      - '.github/workflows/migrate.yml'
   workflow_dispatch:
     inputs:
       environment:
@@ -34,14 +20,12 @@ permissions:
 
 jobs:
   migrate:
-    name: Migrate (${{ inputs.environment || (github.event_name == 'pull_request' && 'hml') || 'production' }})
+    name: Migrate (${{ inputs.environment }})
     runs-on: ubuntu-latest
-    # PR de fork não recebe secrets: pula em vez de falhar.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    environment: ${{ inputs.environment || (github.event_name == 'pull_request' && 'hml') || 'production' }}
+    environment: ${{ inputs.environment }}
     # Nunca cancela uma migration em andamento: a próxima espera na fila.
     concurrency:
-      group: migrate-${{ inputs.environment || (github.event_name == 'pull_request' && 'hml') || 'production' }}
+      group: migrate-${{ inputs.environment }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
