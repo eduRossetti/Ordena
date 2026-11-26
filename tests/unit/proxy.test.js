@@ -17,9 +17,13 @@ function request(path, token) {
 
 const user = { id: 'user-1', username: 'maria', name: 'Maria', sessionId: 'session-1' };
 
-function expectRedirectToLogin(response) {
+// Sem JWT de acesso válido a tela passa por /refresh: só ali o navegador envia o refresh token
+// (cookie com Path=/api/v1/sessions). Se a renovação falhar, /refresh manda para /login.
+function expectRedirectToRefresh(response, next = '/') {
   expect(response.status).toBe(307);
-  expect(new URL(response.headers.get('location')).pathname).toBe('/login');
+  const location = new URL(response.headers.get('location'));
+  expect(location.pathname).toBe('/refresh');
+  expect(location.searchParams.get('next')).toBe(next);
 }
 
 function expectPassThrough(response) {
@@ -28,11 +32,11 @@ function expectPassThrough(response) {
 }
 
 describe('proxy (proteção de rotas)', () => {
-  test('sem cookie de sessão, redireciona rota protegida para /login', async () => {
-    expectRedirectToLogin(await proxy(request('/')));
+  test('sem cookie de sessão, redireciona rota protegida para /refresh', async () => {
+    expectRedirectToRefresh(await proxy(request('/')));
   });
 
-  test('token com assinatura inválida redireciona para /login', async () => {
+  test('token com assinatura inválida redireciona para /refresh', async () => {
     const forged = await new SignJWT({ username: 'x', name: 'x', sid: 's' })
       .setProtectedHeader({ alg: 'HS256' })
       .setSubject('user-1')
@@ -41,10 +45,10 @@ describe('proxy (proteção de rotas)', () => {
       .setExpirationTime('15m')
       .sign(new TextEncoder().encode('outro-segredo-com-mais-de-32-caracteres!!'));
 
-    expectRedirectToLogin(await proxy(request('/', forged)));
+    expectRedirectToRefresh(await proxy(request('/', forged)));
   });
 
-  test('token expirado redireciona para /login', async () => {
+  test('token expirado redireciona para /refresh', async () => {
     const expired = await new SignJWT({ username: 'x', name: 'x', sid: 's' })
       .setProtectedHeader({ alg: 'HS256' })
       .setSubject('user-1')
@@ -54,11 +58,11 @@ describe('proxy (proteção de rotas)', () => {
       .setExpirationTime(Math.floor(Date.now() / 1000) - 60)
       .sign(new TextEncoder().encode(SECRET));
 
-    expectRedirectToLogin(await proxy(request('/', expired)));
+    expectRedirectToRefresh(await proxy(request('/', expired)));
   });
 
-  test('lixo no cookie redireciona para /login', async () => {
-    expectRedirectToLogin(await proxy(request('/', 'isto-nao-e-um-jwt')));
+  test('lixo no cookie redireciona para /refresh', async () => {
+    expectRedirectToRefresh(await proxy(request('/', 'isto-nao-e-um-jwt')));
   });
 
   test('token válido deixa passar a rota protegida', async () => {
@@ -67,15 +71,18 @@ describe('proxy (proteção de rotas)', () => {
   });
 
   test('protege também rotas aninhadas', async () => {
-    expectRedirectToLogin(await proxy(request('/groups/abc/tasks')));
+    expectRedirectToRefresh(
+      await proxy(request('/groups/abc/tasks?tab=1')),
+      '/groups/abc/tasks?tab=1',
+    );
   });
 
-  test.each(['/login', '/signup'])('%s é pública, mesmo sem sessão', async (path) => {
+  test.each(['/login', '/signup', '/refresh'])('%s é pública, mesmo sem sessão', async (path) => {
     expectPassThrough(await proxy(request(path)));
   });
 
   test('não confunde prefixo de rota pública com rota pública', async () => {
-    expectRedirectToLogin(await proxy(request('/login-admin')));
-    expectRedirectToLogin(await proxy(request('/signup/extra')));
+    expectRedirectToRefresh(await proxy(request('/login-admin')), '/login-admin');
+    expectRedirectToRefresh(await proxy(request('/signup/extra')), '/signup/extra');
   });
 });

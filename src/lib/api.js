@@ -1,8 +1,9 @@
 /**
  * Cliente da API interna (`/api/v1`) para o navegador.
  *
- * Nunca lança: devolve `{ ok: true, status, data }` ou `{ ok: false, status, error }`,
- * com `error` no formato da API: `{ name, message, action, statusCode }`.
+ * Renova a sessão sozinho: se uma chamada volta 401, tenta `POST /sessions/refresh` uma vez e
+ * repete a chamada. Nunca lança (exceto `AbortError`): devolve `{ ok: true, status, data }` ou
+ * `{ ok: false, status, error }`, com `error` no formato da API: `{ name, message, action, statusCode }`.
  */
 
 const NETWORK_ERROR = {
@@ -27,7 +28,43 @@ async function readBody(response) {
   }
 }
 
-export async function apiFetch(path, { method = 'GET', body, signal } = {}) {
+// Rotas em que 401 é a resposta normal (credencial errada, sem sessão): não há o que renovar.
+const NO_REFRESH_PREFIXES = ['/sessions', '/users'];
+
+function canRefresh(path) {
+  return !NO_REFRESH_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
+// O refresh token rotaciona: reapresentar um já usado derruba todas as sessões. Por isso só
+// uma renovação roda por vez, na aba (promessa compartilhada) e entre abas (Web Locks).
+let refreshing = null;
+
+async function postRefresh() {
+  try {
+    const response = await fetch('/api/v1/sessions/refresh', {
+      method: 'POST',
+      credentials: 'same-origin',
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+function withRefreshLock(task) {
+  const locks = globalThis.navigator?.locks;
+  return locks ? locks.request('ordena:refresh-session', task) : task();
+}
+
+/** Troca o refresh token por uma sessão nova. `true` se deu certo; nunca lança. */
+export function refreshSession() {
+  refreshing ??= withRefreshLock(postRefresh).finally(() => {
+    refreshing = null;
+  });
+  return refreshing;
+}
+
+async function send(path, { method = 'GET', body, signal } = {}) {
   let response;
   try {
     response = await fetch(`/api/v1${path}`, {
@@ -47,4 +84,12 @@ export async function apiFetch(path, { method = 'GET', body, signal } = {}) {
 
   const error = data?.message ? data : { ...UNEXPECTED_ERROR, statusCode: response.status };
   return { ok: false, status: response.status, error };
+}
+
+export async function apiFetch(path, options) {
+  const result = await send(path, options);
+  if (result.status !== 401 || !canRefresh(path)) return result;
+
+  // Renovou: repete uma vez. Não renovou (ou o 401 persiste): devolve o 401 e quem chamou decide.
+  return (await refreshSession()) ? send(path, options) : result;
 }

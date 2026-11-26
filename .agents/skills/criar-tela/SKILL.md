@@ -26,7 +26,8 @@ description: Cria telas e componentes React do Ordena (PWA mobile-first) que con
 ## Rotas protegidas
 
 - Toda tela exige sessão: `src/proxy.js` redireciona para `/login` quem não tem JWT de acesso válido. Só `/login` e `/signup` são públicas (`PUBLIC_PATHS`); não crie checagem de sessão por tela.
-- Se uma chamada de API devolver 401 com a tela aberta (sessão expirou), faça `router.replace('/login')`.
+- Sessão vencida é renovada sozinha: o proxy leva a `/refresh` e `apiFetch` renova e repete a chamada ao receber 401 (nunca chame `/sessions/refresh` na mão; use `refreshSession` de `src/lib/api.js`, que evita renovações simultâneas, pois o refresh token rotaciona e reuso derruba as sessões).
+- Se `apiFetch` ainda devolver 401 (renovação falhou), faça `router.replace('/login')`.
 - O proxy só autentica; "sem permissão" (403) é tratado por tela/model, não aqui.
 
 ## Formulários
