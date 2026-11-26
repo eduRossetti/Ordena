@@ -76,7 +76,7 @@ Também adiado: `users.avatar_url` (volta com o upload de avatar).
 
 ## Fora do escopo da base atual
 
-Telas de login/cadastro, CRUDs de grupo/tarefa/convite, telas, service worker (offline/cache), CI e deploy.
+Telas de login/cadastro, CRUDs de grupo/tarefa/convite, telas, service worker (offline/cache). CI e deploy já existem: veja `docs/deploy.md`.
 
 ## Decisões
 

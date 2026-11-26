@@ -24,6 +24,11 @@ Schema: `infra/prisma/schema.prisma`. Migrations: `infra/prisma/migrations/` (ve
 ## Regras
 
 - **Nunca** edite uma migration já aplicada/commitada; crie outra.
-- Mudança destrutiva (drop/rename de coluna com dados): faça em duas migrations ou escreva SQL manual revisado.
+- **Mudança destrutiva (drop/rename/troca de tipo de coluna ou tabela): duas etapas, em PRs separados.** No deploy, a Vercel roda a migration (`vercel-build`) e só depois publica o código novo (~1 min); nesse intervalo o código **antigo** ainda atende, contra o banco já migrado. Se a migration tirou algo que o código antigo usa, dá 500.
+  1. PR 1 só **adiciona** (coluna/tabela nova, copiando dados se preciso) e o código passa a usar o novo; o antigo continua existindo no banco.
+  2. PR 2, só depois do PR 1 estar em produção, **remove** o que ninguém mais usa.
+  - Renomear campo no `schema.prisma` faz o `migrate dev` gerar `DROP` + `ADD` e **perde os dados**: leia o SQL gerado (passo 3). Para renomear sem perder dados, use SQL manual (`--create-only`) com `ALTER ... RENAME` e siga as duas etapas.
+  - Só adicionar (tabela, coluna opcional ou com `DEFAULT`) pode ir direto, sem cuidado extra.
+  - Como o deploy funciona: `docs/deploy.md`.
 - `npm run db:generate` regenera o client (`infra/prisma/generated`, ignorado pelo git; roda no `postinstall`).
 - Senhas só como `passwordHash` (bcrypt); nunca selecionar esse campo em respostas.

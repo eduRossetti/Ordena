@@ -104,6 +104,10 @@ Referência viva: `/api/v1/status` (`src/app/api/v1/status/route.js` → `src/mo
 - Toda rota de grupo/tarefa deve checar que o usuário autenticado é **membro** do grupo (no model, usando o `user` recebido).
 - `message` de erro de validação em pt-BR: passe mensagens explícitas nos schemas Zod (o fallback do Zod é pt-PT).
 
+## CI e deploy
+
+A `main` é protegida: só entra por PR com os checks do CI (`Lint e formatação`, `Testes (Jest)`, `Build (Next.js)`) verdes. A Vercel faz o deploy (push na `main` = Production, outras branches/PRs = Preview, cada um com o seu banco) e roda as migrations no build (`vercel-build`). Migration que remove/renomeia coluna ou tabela segue a regra de duas etapas da skill `alterar-banco`. Fluxo completo, segredos e limites: `docs/deploy.md`.
+
 ## Domínio
 
 User (`username` único) · Group · GroupMember (role OWNER/ADMIN/MEMBER) · GroupInvite (convite por username: PENDING/ACCEPTED/DECLINED/CANCELED) · Task (TODO/DOING/DONE, prioridade) · TaskAssignee (N:N, várias pessoas por tarefa).
@@ -124,7 +128,7 @@ Login por e-mail + senha (`bcryptjs`) com JWT (`jose`) e refresh token em `sessi
 ## Definição de pronto
 
 1. `npm test`, `npm run lint` e `npm run format:check` passam.
-2. Mudou o schema → migration criada e commitada (nunca editar migration já aplicada).
+2. Mudou o schema → migration criada e commitada (nunca editar migration já aplicada). Se ela remove/renomeia algo, está dividida em duas etapas (skill `alterar-banco`).
 3. Endpoint novo → um teste de integração por método e segue o padrão controller → model.
 4. Sem segredos no git (`.env` é local; só `.env.example` é versionado).
 
