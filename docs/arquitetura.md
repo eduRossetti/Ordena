@@ -78,7 +78,7 @@ Também adiado: `users.avatar_url` (volta com o upload de avatar).
 
 ## Fora do escopo da base atual
 
-Logout, proteção de rotas e refresh automático no front, CRUDs de grupo/tarefa/convite e suas telas, service worker (offline/cache). CI e deploy já existem: veja `docs/deploy.md`.
+Logout, refresh automático no front, autorização por rota/grupo na tela (o proxy só checa se há sessão), CRUDs de grupo/tarefa/convite e suas telas, service worker (offline/cache). CI e deploy já existem: veja `docs/deploy.md`.
 
 ## Decisões
 

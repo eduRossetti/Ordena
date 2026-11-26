@@ -115,7 +115,7 @@ A `main` é protegida: só entra por PR com os checks do CI (`Lint e formataçã
 User (`username` único) · Group · GroupMember (role OWNER/ADMIN/MEMBER) · GroupInvite (convite por username: PENDING/ACCEPTED/DECLINED/CANCELED) · Task (TODO/DOING/DONE, prioridade) · TaskAssignee (N:N, várias pessoas por tarefa).
 Schema em `infra/prisma/schema.prisma`; detalhes em `docs/arquitetura.md`.
 **Hoje o schema só tem `User` e `Session`**; Group, GroupMember, GroupInvite, Task e TaskAssignee estão planejados (desenho em `docs/arquitetura.md`) e entram, com migration própria, junto com a feature que os usa.
-Login por e-mail + senha (`bcryptjs`) com JWT (`jose`) e refresh token em `sessions` (ver "Usuário autenticado"). Telas: `/signup` e `/login` em `(auth)`; a home `/` é a área logada provisória em `(app)` (sem proteção de rota nem refresh automático ainda).
+Login por e-mail + senha (`bcryptjs`) com JWT (`jose`) e refresh token em `sessions` (ver "Usuário autenticado"). Telas: `/signup` e `/login` em `(auth)`; a home `/` é a área logada provisória em `(app)`. `src/proxy.js` (proxy do Next, antigo middleware) manda para `/login` quem não tem JWT de acesso válido em qualquer tela, exceto `/login` e `/signup` (APIs, `_next` e assets ficam fora; `/api/v1` responde 401 sozinha). Tela nova já nasce protegida; para abrir uma tela a deslogados, inclua o caminho em `PUBLIC_PATHS` do proxy. Ainda sem refresh automático: com o access token de 15 min vencido, a pessoa volta ao login.
 
 ## Convenções
 

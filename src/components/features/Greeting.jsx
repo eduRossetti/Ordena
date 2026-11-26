@@ -1,7 +1,7 @@
 'use client';
 
-import { Heading, LinkButton, Stack, Text } from '@primer/react';
-import NextLink from 'next/link';
+import { Heading, Stack, Text } from '@primer/react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import StatusBanner from '@/components/ui/StatusBanner';
 import { apiFetch } from '@/lib/api';
@@ -9,6 +9,7 @@ import styles from './Greeting.module.css';
 
 // Home provisória da área logada: cumprimenta quem está com sessão.
 export default function Greeting() {
+  const router = useRouter();
   const [state, setState] = useState({ status: 'loading' });
 
   useEffect(() => {
@@ -16,14 +17,15 @@ export default function Greeting() {
     apiFetch('/user', { signal: controller.signal })
       .then((result) => {
         if (result.ok) setState({ status: 'ready', user: result.data });
-        else if (result.status === 401) setState({ status: 'anonymous' });
+        else if (result.status === 401)
+          router.replace('/login'); // sessão expirou com a tela aberta
         else setState({ status: 'error', error: result.error });
       })
       .catch(() => {
         // Abortado ao desmontar: nada a fazer.
       });
     return () => controller.abort();
-  }, []);
+  }, [router]);
 
   if (state.status === 'loading') {
     return (
@@ -50,38 +52,9 @@ export default function Greeting() {
     );
   }
 
-  if (state.status === 'error') {
-    return (
-      <StatusBanner variant="critical" title={state.error.message}>
-        {state.error.action}
-      </StatusBanner>
-    );
-  }
-
   return (
-    <Stack gap="normal">
-      <Stack gap="condensed">
-        <Heading as="h1" variant="medium">
-          Você não está conectado
-        </Heading>
-        <Text as="p" className={styles.muted}>
-          Entre ou crie uma conta para ver as tarefas dos seus grupos.
-        </Text>
-      </Stack>
-      <Stack direction="horizontal" gap="condensed">
-        <LinkButton
-          as={NextLink}
-          href="/login"
-          variant="primary"
-          size="large"
-          className={styles.action}
-        >
-          Entrar
-        </LinkButton>
-        <LinkButton as={NextLink} href="/signup" size="large" className={styles.action}>
-          Criar conta
-        </LinkButton>
-      </Stack>
-    </Stack>
+    <StatusBanner variant="critical" title={state.error.message}>
+      {state.error.action}
+    </StatusBanner>
   );
 }

@@ -23,6 +23,12 @@ description: Cria telas e componentes React do Ordena (PWA mobile-first) que con
 6. Neste Next, `params`/`searchParams` são Promises (em Server Components, `await`; em Client Components, `use()`). Em dúvida, consulte `node_modules/next/dist/docs/`.
 7. `npm run lint && npm run format`.
 
+## Rotas protegidas
+
+- Toda tela exige sessão: `src/proxy.js` redireciona para `/login` quem não tem JWT de acesso válido. Só `/login` e `/signup` são públicas (`PUBLIC_PATHS`); não crie checagem de sessão por tela.
+- Se uma chamada de API devolver 401 com a tela aberta (sessão expirou), faça `router.replace('/login')`.
+- O proxy só autentica; "sem permissão" (403) é tratado por tela/model, não aqui.
+
 ## Formulários
 
 - `onSubmit` com estado controlado e `noValidate`. Evite `<form action>`/`useActionState`: o React 19 reseta campos não controlados após a action e a pessoa perde o que digitou num erro.
