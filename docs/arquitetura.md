@@ -2,7 +2,7 @@
 
 ## Visão geral
 
-PWA mobile-first em Next.js. O navegador instala o app na tela inicial (`src/app/manifest.js`, `display: standalone`). O front consome **somente** a API REST interna.
+PWA mobile-first em Next.js com interface construída sobre o GitHub Primer (`@primer/react`, tema escuro fixo) e CSS Modules com tokens do `@primer/primitives`. O navegador instala o app na tela inicial (`src/app/manifest.js`, `display: standalone`). O front consome **somente** a API REST interna.
 
 ```
 Navegador (React)  ──fetch──▶  /api/v1/**/route.js  (controller: next-connect, lê entrada, responde)
@@ -15,6 +15,8 @@ Navegador (React)  ──fetch──▶  /api/v1/**/route.js  (controller: next-
 ```
 
 Fat model, thin controller, inspirado no clone-tabnews: o controller só traduz HTTP; toda regra mora no model.
+
+No navegador, as telas chamam a API por `apiFetch` (`src/lib/api.js`), que nunca lança e devolve `{ ok, status, data | error }`. Formulários validam antes de enviar com as regras dos models espelhadas em `src/lib/validation/`; a API continua sendo a palavra final.
 
 Transversal em `infra/`: `controller.js` (`errorHandlers` do next-connect: erro padrão e 405), `errors.js` (erros públicos), `database.js` (Prisma singleton com adapter `pg`), `prisma/` (schema + migrations), `compose.yaml` + `database/init.sql` (Postgres de dev com `ordena_dev` e `ordena_test`).
 
@@ -76,7 +78,7 @@ Também adiado: `users.avatar_url` (volta com o upload de avatar).
 
 ## Fora do escopo da base atual
 
-Telas de login/cadastro, CRUDs de grupo/tarefa/convite, telas, service worker (offline/cache). CI e deploy já existem: veja `docs/deploy.md`.
+Logout, autorização por rota/grupo na tela (o proxy só checa se há sessão), CRUDs de grupo/tarefa/convite e suas telas, service worker (offline/cache). CI e deploy já existem: veja `docs/deploy.md`.
 
 ## Decisões
 

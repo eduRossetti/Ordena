@@ -1,75 +1,12 @@
-@import 'tailwindcss';
+@import '@primer/primitives/dist/css/functional/themes/dark.css';
+@import '@primer/primitives/dist/css/primitives.css';
 
-/* Tokens definidos em docs/design.md. Atualize os dois juntos. */
-:root {
-  --background: #ffffff;
-  --surface: #f6f8fa;
-  --border: #d1d9e0;
-  --foreground: #1f2328;
-  --muted: #59636e;
-  --accent: #0969da;
-  --accent-subtle: #ddf4ff;
-  --primary: #1f883d;
-  --primary-foreground: #ffffff;
-  --success: #1a7f37;
-  --success-subtle: #dafbe1;
-  --attention: #9a6700;
-  --attention-subtle: #fff8c5;
-  --danger: #d1242f;
-  --danger-subtle: #ffebe9;
-  --done: #8250df;
-  --done-subtle: #fbefff;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0d1117;
-    --surface: #151b23;
-    --border: #3d444d;
-    --foreground: #f0f6fc;
-    --muted: #9198a1;
-    --accent: #4493f8;
-    --accent-subtle: #388bfd1a;
-    --primary: #238636;
-    --primary-foreground: #ffffff;
-    --success: #3fb950;
-    --success-subtle: #2ea64326;
-    --attention: #d29922;
-    --attention-subtle: #bb800926;
-    --danger: #f85149;
-    --danger-subtle: #f851491a;
-    --done: #ab7df8;
-    --done-subtle: #a371f71a;
-  }
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-border: var(--border);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-accent: var(--accent);
-  --color-accent-subtle: var(--accent-subtle);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-success: var(--success);
-  --color-success-subtle: var(--success-subtle);
-  --color-attention: var(--attention);
-  --color-attention-subtle: var(--attention-subtle);
-  --color-danger: var(--danger);
-  --color-danger-subtle: var(--danger-subtle);
-  --color-done: var(--done);
-  --color-done-subtle: var(--done-subtle);
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
+  background: var(--bgColor-default);
+  color: var(--fgColor-default);
+  min-height: 100dvh;
 }

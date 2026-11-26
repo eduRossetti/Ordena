@@ -1,0 +1,17 @@
+.submit {
+  /* Alvo de toque de 44px (o `large` do Primer tem 40px). */
+  --control-large-size: 2.75rem;
+
+  margin-top: var(--base-size-8);
+}
+
+.footer {
+  text-align: center;
+  color: var(--fgColor-muted);
+}
+
+.footerLink {
+  display: inline-block;
+  padding-block: var(--base-size-12);
+  font-weight: var(--base-text-weight-semibold);
+}

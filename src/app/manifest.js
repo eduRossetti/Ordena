@@ -5,8 +5,8 @@ export default function manifest() {
     description: 'Tarefas compartilhadas em grupo',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#ffffff',
+    background_color: '#0d1117',
+    theme_color: '#0d1117',
     lang: 'pt-BR',
     icons: [
       { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },

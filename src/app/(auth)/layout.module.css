@@ -1,0 +1,24 @@
+.main {
+  margin-inline: auto;
+  display: flex;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 24rem;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--base-size-32) var(--base-size-16);
+}
+
+.brand {
+  margin-bottom: var(--base-size-32);
+}
+
+.icon {
+  border-radius: var(--borderRadius-medium);
+}
+
+.subtitle {
+  margin-top: var(--base-size-4);
+  margin-bottom: var(--base-size-24);
+  color: var(--fgColor-muted);
+}

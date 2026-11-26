@@ -1,0 +1,15 @@
+/*
+ * O TextInput `large` do Primer tem 40px de altura e fonte de 14px. No celular isso
+ * dá zoom automático no iOS (fonte < 16px) e alvo de toque abaixo de 44px.
+ * A classe repetida vence a regra do Primer, que tem a mesma especificidade.
+ */
+.input.input {
+  --inner-action-size: 2.75rem;
+
+  height: 2.75rem;
+  font-size: var(--base-text-size-md);
+}
+
+.input.input input {
+  font-size: var(--base-text-size-md);
+}

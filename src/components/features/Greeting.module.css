@@ -1,0 +1,7 @@
+.muted {
+  color: var(--fgColor-muted);
+}
+
+.username {
+  color: var(--fgColor-default);
+}
