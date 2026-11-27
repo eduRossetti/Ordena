@@ -1,0 +1,17 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--base-size-12);
+  min-height: calc(var(--base-size-44) + var(--base-size-12) + 1px);
+  padding-bottom: var(--base-size-12);
+  border-bottom: 1px solid var(--borderColor-default);
+}
+
+.title {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

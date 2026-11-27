@@ -1,0 +1,6 @@
+.button {
+  /* Alvo de toque de 44px (o `IconButton size="large"` do Primer tem 40px). */
+  --control-large-size: 2.75rem;
+
+  flex-shrink: 0;
+}

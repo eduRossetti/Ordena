@@ -9,4 +9,6 @@ body {
   background: var(--bgColor-default);
   color: var(--fgColor-default);
   min-height: 100dvh;
+  /* viewport-fit=cover: respeita o notch no celular deitado. */
+  padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
 }
