@@ -38,7 +38,7 @@ const unauthorized = {
 };
 
 describe('GET /api/v1/user', () => {
-  test('retorna 200 com o usuário autenticado, sem passwordHash', async () => {
+  test('retorna 200 com o usuário autenticado sem grupo (membership: null), sem passwordHash', async () => {
     const user = await orchestrator.createUser();
     const { cookie } = await orchestrator.createSession(user);
 
@@ -52,8 +52,23 @@ describe('GET /api/v1/user', () => {
       email: user.email,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
+      membership: null,
     });
     expect(body).not.toHaveProperty('passwordHash');
+  });
+
+  test('retorna 200 com membership preenchido quando o usuário participa de um grupo', async () => {
+    const user = await orchestrator.createUser();
+    const group = await orchestrator.createGroup(user, { name: 'Casa' });
+    const { cookie } = await orchestrator.createSession(user);
+
+    const response = await getUser(cookie);
+    expect(response.status).toBe(200);
+    expect((await response.json()).membership).toEqual({
+      groupId: group.id,
+      groupName: 'Casa',
+      role: 'OWNER',
+    });
   });
 
   test('funciona com NextRequest, o tipo que o Next entrega em runtime', async () => {

@@ -78,9 +78,32 @@ async function findOneById(id) {
 
 // Usuário dono de um token válido. Se a conta sumiu, a sessão não vale mais (401, não 404).
 async function findAuthenticated(id) {
-  const found = await prisma.user.findUnique({ where: { id }, select: publicSelect });
+  const found = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      ...publicSelect,
+      membership: {
+        select: {
+          groupId: true,
+          role: true,
+          group: { select: { name: true } },
+        },
+      },
+    },
+  });
   if (!found) throw new UnauthorizedError({ message: 'Sessão inválida ou expirada.' });
-  return found;
+
+  const { membership, ...userData } = found;
+  return {
+    ...userData,
+    membership: membership
+      ? {
+          groupId: membership.groupId,
+          groupName: membership.group.name,
+          role: membership.role,
+        }
+      : null,
+  };
 }
 
 // Uso interno (login): inclui passwordHash. Nunca devolva isto numa resposta.
