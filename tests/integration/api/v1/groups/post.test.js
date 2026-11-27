@@ -79,9 +79,11 @@ describe('POST /api/v1/groups', () => {
     expect(emptyName.status).toBe(400);
     expect((await emptyName.json()).name).toBe('ValidationError');
 
-    const longName = await postGroup({ name: 'a'.repeat(81) }, cookie);
+    const longName = await postGroup({ name: 'a'.repeat(51) }, cookie);
     expect(longName.status).toBe(400);
-    expect((await longName.json()).name).toBe('ValidationError');
+    const longNameBody = await longName.json();
+    expect(longNameBody.name).toBe('ValidationError');
+    expect(longNameBody.message).toBe('O nome do grupo deve ter no máximo 50 caracteres.');
 
     const badJson = await postGroup('{invalido', cookie);
     expect(badJson.status).toBe(400);

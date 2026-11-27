@@ -20,14 +20,15 @@ Textos de interface em **pt-BR**; código, rotas e nomes em **inglês**.
 
 ## Comandos
 
-| Comando                                       | Para quê                                                                                   |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `npm run db:up` / `db:down`                   | Sobe/derruba o Postgres (Docker)                                                           |
-| `npm run db:migrate -- --name <nome>`         | Cria e aplica migration (dev)                                                              |
-| `npm run db:generate` / `db:studio`           | Gera o client Prisma / abre o Studio                                                       |
-| `npm run dev`                                 | Sobe o banco, aplica migrations e abre http://localhost:3000                               |
-| `npm test` · `test:unit` · `test:integration` | Jest (integration usa o banco `ordena_test`, aplica as migrations sozinho e roda em série) |
-| `npm run lint` · `format:check`               | ESLint · Prettier (`format` corrige)                                                       |
+| Comando                                       | Para quê                                                                                                           |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `npm run db:up` / `db:down`                   | Sobe/derruba o Postgres (Docker)                                                                                   |
+| `npm run db:migrate -- --name <nome>`         | Cria e aplica migration (dev)                                                                                      |
+| `npm run db:generate` / `db:studio`           | Gera o client Prisma / abre o Studio                                                                               |
+| `npm run dev`                                 | Sobe o banco, aplica migrations e abre http://localhost:3000                                                       |
+| `npm run dev:stop`                            | Derruba o `npm run dev`, o `next dev` e o servidor web (porta 3000) e o Postgres **apagando os dados** (`down -v`) |
+| `npm test` · `test:unit` · `test:integration` | Jest (integration usa o banco `ordena_test`, aplica as migrations sozinho e roda em série)                         |
+| `npm run lint` · `format:check`               | ESLint · Prettier (`format` corrige)                                                                               |
 
 Primeiro uso: `cp .env.example .env && npm install && npm run dev`.
 Se `ordena_test` não existir (volume antigo, o `init.sql` só roda na criação): `npm run db:down -- -v && npm run db:up`.
@@ -114,7 +115,7 @@ A `main` é protegida: só entra por PR com os checks do CI (`Lint e formataçã
 
 User (`username` único) · Session · Group · GroupMember (1 grupo por usuário, role OWNER/ADMIN/MEMBER, 1 OWNER por grupo) · GroupInvite (convite por username: PENDING/ACCEPTED/DECLINED/CANCELED, 1 pendente por pessoa+grupo) · Task (TODO/DOING/DONE, prioridade LOW/MEDIUM/HIGH) · TaskAssignee (N:N, várias pessoas por tarefa).
 Schema completo em `infra/prisma/schema.prisma`; regras de permissão, models (`group`, `invite`, `task`) e rotas em `/api/v1` detalhados em `docs/arquitetura.md`.
-Login por e-mail + senha (`bcryptjs`) com JWT (`jose`) e refresh token em `sessions` (ver "Usuário autenticado"). Telas: `/signup` e `/login` em `(auth)`; área logada em `(app)` com barra inferior fixa (`BottomNav`) entre `/` (Tarefas, com cabeçalho `TasksHeader` e sino `NotificationBell`), `/group` (Grupo) e `/profile` (Perfil). O layout de `(app)` monta `UserProvider`, que busca `GET /api/v1/user` uma vez, redireciona para `/login` em 401 não renovável e expõe `{ status, user, error, reload }` via `useUser()` (`src/hooks/useUser.js`); componentes reutilizáveis de estado ficam em `src/components/ui/` (`LoadingState`, `EmptyState`, `ErrorState`). `src/proxy.js` (proxy do Next, antigo middleware) protege toda tela, exceto `/login`, `/signup` e `/refresh` (APIs, `_next` e assets ficam fora; `/api/v1` responde 401 sozinha). Sem JWT de acesso válido, redireciona para `/refresh?next=<tela>`, que renova a sessão com o refresh token (só ali o navegador o envia, por causa do `Path=/api/v1/sessions`) e volta à tela; se falhar, vai para `/login`. Tela nova já nasce protegida; para abri-la a deslogados, inclua o caminho em `PUBLIC_PATHS`. O refresh também é automático nas chamadas de API: `apiFetch` renova e repete uma vez ao receber 401 (veja `src/lib/api.js`).
+Login por e-mail + senha (`bcryptjs`) com JWT (`jose`) e refresh token em `sessions` (ver "Usuário autenticado"). Telas: `/signup` e `/login` em `(auth)`; área logada em `(app)` com barra inferior fixa (`BottomNav`) entre `/` (Tarefas, com cabeçalho `TasksHeader` e sino `NotificationBell`), `/group` (Grupo, além de `/group/new` para criação de grupo) e `/profile` (Perfil). Sem grupo (`membership === null`), `/` e `/group` exibem `WelcomeState` com acesso a `/group/new` e aviso sobre o sino. O layout de `(app)` monta `UserProvider`, que busca `GET /api/v1/user` uma vez, redireciona para `/login` em 401 não renovável e expõe `{ status, user, error, reload }` via `useUser()` (`src/hooks/useUser.js`); componentes reutilizáveis de estado ficam em `src/components/ui/` (`LoadingState`, `EmptyState`, `ErrorState`). `src/proxy.js` (proxy do Next, antigo middleware) protege toda tela, exceto `/login`, `/signup` e `/refresh` (APIs, `_next` e assets ficam fora; `/api/v1` responde 401 sozinha). Sem JWT de acesso válido, redireciona para `/refresh?next=<tela>`, que renova a sessão com o refresh token (só ali o navegador o envia, por causa do `Path=/api/v1/sessions`) e volta à tela; se falhar, vai para `/login`. Tela nova já nasce protegida; para abri-la a deslogados, inclua o caminho em `PUBLIC_PATHS`. O refresh também é automático nas chamadas de API: `apiFetch` renova e repete uma vez ao receber 401 (veja `src/lib/api.js`).
 
 ## Convenções
 

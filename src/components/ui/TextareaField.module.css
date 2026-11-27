@@ -1,0 +1,28 @@
+/*
+ * O Textarea do Primer tem fonte de 14px por padrão. No celular isso causa zoom
+ * automático no iOS (fonte < 16px). A classe repetida vence a especificidade do Primer.
+ */
+.textarea.textarea {
+  font-size: var(--base-text-size-md);
+}
+
+.textarea.textarea textarea {
+  font-size: var(--base-text-size-md);
+}
+
+.caption {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--base-size-8);
+  width: 100%;
+}
+
+.counter {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.overLimit {
+  color: var(--fgColor-danger);
+}

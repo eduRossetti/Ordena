@@ -1,0 +1,8 @@
+.actions {
+  margin-top: var(--base-size-8);
+}
+
+.actionButton {
+  /* Alvo de toque de 44px (o `large` do Primer tem 40px). */
+  --control-large-size: 2.75rem;
+}

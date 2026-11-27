@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "npm run db:up && prisma migrate deploy && next dev",
+    "dev:stop": "node scripts/dev-stop.mjs",
     "build": "next build",
     "vercel-build": "prisma migrate deploy --config prisma.config.js && next build",
     "start": "next start",

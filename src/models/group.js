@@ -44,7 +44,7 @@ const nameSchema = z
   .string({ error: 'Informe o nome do grupo.' })
   .trim()
   .min(1, 'Informe o nome do grupo.')
-  .max(80, 'O nome do grupo deve ter no máximo 80 caracteres.');
+  .max(50, 'O nome do grupo deve ter no máximo 50 caracteres.');
 
 const descriptionSchema = z
   .string({ error: 'A descrição deve ser um texto.' })

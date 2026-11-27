@@ -1,0 +1,28 @@
+.cta {
+  /* Alvo de toque de 44px (o `large` do Primer tem 40px). */
+  --control-large-size: 2.75rem;
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--base-size-8);
+  width: 100%;
+  margin-top: var(--base-size-8);
+  padding: var(--base-size-12);
+  border: 1px solid var(--borderColor-default);
+  border-radius: var(--borderRadius-medium);
+  background: var(--bgColor-muted);
+  text-align: left;
+}
+
+.noticeIcon {
+  flex-shrink: 0;
+  margin-top: var(--base-size-2);
+  color: var(--fgColor-muted);
+}
+
+.noticeText {
+  margin: 0;
+  color: var(--fgColor-muted);
+}

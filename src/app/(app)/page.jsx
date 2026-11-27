@@ -1,7 +1,8 @@
 'use client';
 
-import { ChecklistIcon, PeopleIcon } from '@primer/octicons-react';
+import { ChecklistIcon } from '@primer/octicons-react';
 import TasksHeader from '@/components/features/TasksHeader';
+import WelcomeState from '@/components/features/WelcomeState';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import LoadingState from '@/components/ui/LoadingState';
@@ -26,11 +27,7 @@ export default function TasksPage() {
           description="Em breve, suas tarefas aparecem aqui."
         />
       ) : (
-        <EmptyState
-          icon={PeopleIcon}
-          title="Você ainda não tem um grupo"
-          description="Crie um grupo ou aceite um convite para começar a organizar tarefas."
-        />
+        <WelcomeState />
       )}
     </>
   );
