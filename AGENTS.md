@@ -20,14 +20,15 @@ Textos de interface em **pt-BR**; código, rotas e nomes em **inglês**.
 
 ## Comandos
 
-| Comando                                       | Para quê                                                                                   |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `npm run db:up` / `db:down`                   | Sobe/derruba o Postgres (Docker)                                                           |
-| `npm run db:migrate -- --name <nome>`         | Cria e aplica migration (dev)                                                              |
-| `npm run db:generate` / `db:studio`           | Gera o client Prisma / abre o Studio                                                       |
-| `npm run dev`                                 | Sobe o banco, aplica migrations e abre http://localhost:3000                               |
-| `npm test` · `test:unit` · `test:integration` | Jest (integration usa o banco `ordena_test`, aplica as migrations sozinho e roda em série) |
-| `npm run lint` · `format:check`               | ESLint · Prettier (`format` corrige)                                                       |
+| Comando                                       | Para quê                                                                                                           |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `npm run db:up` / `db:down`                   | Sobe/derruba o Postgres (Docker)                                                                                   |
+| `npm run db:migrate -- --name <nome>`         | Cria e aplica migration (dev)                                                                                      |
+| `npm run db:generate` / `db:studio`           | Gera o client Prisma / abre o Studio                                                                               |
+| `npm run dev`                                 | Sobe o banco, aplica migrations e abre http://localhost:3000                                                       |
+| `npm run dev:stop`                            | Derruba o `npm run dev`, o `next dev` e o servidor web (porta 3000) e o Postgres **apagando os dados** (`down -v`) |
+| `npm test` · `test:unit` · `test:integration` | Jest (integration usa o banco `ordena_test`, aplica as migrations sozinho e roda em série)                         |
+| `npm run lint` · `format:check`               | ESLint · Prettier (`format` corrige)                                                                               |
 
 Primeiro uso: `cp .env.example .env && npm install && npm run dev`.
 Se `ordena_test` não existir (volume antigo, o `init.sql` só roda na criação): `npm run db:down -- -v && npm run db:up`.
