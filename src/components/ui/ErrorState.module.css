@@ -1,0 +1,10 @@
+.container {
+  padding-block: var(--base-size-16);
+}
+
+.retry {
+  /* Alvo de toque de 44px (o `large` do Primer tem 40px). */
+  --control-large-size: 2.75rem;
+
+  align-self: flex-start;
+}
