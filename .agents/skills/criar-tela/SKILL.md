@@ -16,8 +16,8 @@ description: Cria telas e componentes React do Ordena (PWA mobile-first) que con
 ## Passos
 
 1. Rota: `src/app/(app)/<caminho>/page.jsx` (área logada) ou `(auth)/` (login/cadastro). A área logada `(app)` já traz `UserProvider`, o container mobile (`max-width: 28rem` + padding inferior da barra) e a `BottomNav` (Tarefas `/`, Grupo `/group`, Perfil `/profile`) em `src/app/(app)/layout.jsx` — não recrie a barra nas páginas.
-2. Todo arquivo com JSX é `.jsx` (componentes, `page`, `layout`); `.js` fica para código sem JSX (hooks, lib, models, `route.js`, `manifest.js`). Wrappers genéricos sobre o Primer ficam em `src/components/ui/` (`FormField`, `PasswordField`, `StatusBanner`, `LoadingState`, `EmptyState`, `ErrorState`); componentes de domínio ficam em `src/components/features/` (`SignupForm`, `LoginForm`, `UserProvider`, `BottomNav`, `TasksHeader`, `NotificationBell`, `TaskCard`, `MemberList`).
-3. Dados da pessoa logada: leia com `useUser()` de `src/hooks/useUser.js` (`{ status, user, error, reload }`). **Não** chame `GET /user` por conta própria na tela. Depois de mutações que mudam o `membership` (criar grupo, aceitar convite, sair do grupo), chame `reload()` para atualizar o contexto.
+2. Todo arquivo com JSX é `.jsx` (componentes, `page`, `layout`); `.js` fica para código sem JSX (hooks, lib, models, `route.js`, `manifest.js`). Wrappers genéricos sobre o Primer ficam em `src/components/ui/` (`FormField`, `PasswordField`, `TextareaField`, `StatusBanner`, `PageHeader`, `LoadingState`, `EmptyState`, `ErrorState`); componentes de domínio ficam em `src/components/features/` (`SignupForm`, `LoginForm`, `UserProvider`, `BottomNav`, `TasksHeader`, `NotificationBell`, `WelcomeState`, `CreateGroupForm`, `TaskCard`, `MemberList`).
+3. Dados da pessoa logada: leia com `useUser()` de `src/hooks/useUser.js` (`{ status, user, error, reload }`). **Não** chame `GET /user` por conta própria na tela. Depois de mutações que mudam o `membership` (criar grupo, aceitar convite, sair do grupo), chame `await reload()` para atualizar o contexto antes de navegar.
 4. Estados de tela: use `LoadingState`, `EmptyState` e `ErrorState` (passando `error` e `onRetry`) de `src/components/ui/` para manter consistência visual e acessibilidade.
 5. Componentes que usam estado/efeitos/eventos levam `'use client'`; mantenha-os pequenos e empurre o `'use client'` para as folhas.
 6. Lógica de fetch/estado reutilizável vai para `src/hooks/` (`useTasks(groupId)`).
@@ -36,7 +36,7 @@ description: Cria telas e componentes React do Ordena (PWA mobile-first) que con
 
 - `onSubmit` com estado controlado e `noValidate`. Evite `<form action>`/`useActionState`: o React 19 reseta campos não controlados após a action e a pessoa perde o que digitou num erro.
 - Valide antes de enviar com as regras do model espelhadas em `src/lib/validation/<recurso>.js` (função pura + teste em `tests/unit/lib/`), erro embaixo do campo e foco no primeiro inválido. Erro da API vai num `StatusBanner` no topo do form, com foco nele.
-- Use `FormField`, `PasswordField` e `StatusBanner` de `src/components/ui/`, e `Button`/`Link`/`Stack` direto de `@primer/react`.
+- Use `FormField`, `PasswordField`, `TextareaField` e `StatusBanner` de `src/components/ui/`, e `Button`/`LinkButton`/`Link`/`Stack` direto de `@primer/react`.
 
 ## Regras
 

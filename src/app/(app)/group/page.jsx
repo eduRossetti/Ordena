@@ -1,11 +1,10 @@
 'use client';
 
-import { PeopleIcon } from '@primer/octicons-react';
 import { Heading, Stack, Text } from '@primer/react';
-import EmptyState from '@/components/ui/EmptyState';
-import PageHeader from '@/components/ui/PageHeader';
+import WelcomeState from '@/components/features/WelcomeState';
 import ErrorState from '@/components/ui/ErrorState';
 import LoadingState from '@/components/ui/LoadingState';
+import PageHeader from '@/components/ui/PageHeader';
 import { useUser } from '@/hooks/useUser';
 import styles from '../layout.module.css';
 
@@ -33,11 +32,7 @@ export default function GroupPage() {
           </Stack>
         </div>
       ) : (
-        <EmptyState
-          icon={PeopleIcon}
-          title="Você ainda não tem um grupo"
-          description="Quando você criar um grupo ou aceitar um convite, ele aparecerá aqui."
-        />
+        <WelcomeState />
       )}
     </>
   );
